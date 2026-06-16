@@ -1,8 +1,11 @@
+# Analysis of Texas Tech Football Offense Stats for the 2025 Season
+# Jaden Tumale
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
-
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 os.makedirs("outputs", exist_ok=True)
 
 # Load and clean the data
@@ -11,24 +14,19 @@ print("Missing Values:")
 print(df.isnull().sum())
 df["Margin"] = df["Pts"] - df["PtsO"]
 df = df.iloc[:-1]
-
 print(df.head())
 print(df.describe())
-
 corr = df.corr(numeric_only=True)
-
 margin_corr = corr["Margin"].sort_values(ascending=False)
 
 # Remove Margin itself
 margin_corr = margin_corr.drop("Margin")
+margin_corr.to_csv("margin_correlations.csv")
+print(margin_corr)
 
+#Find best and worst correlations
 best_corr = margin_corr.nlargest(5)
 worst_corr = margin_corr.nsmallest(5)
-
-print(worst_corr)
-
-print(margin_corr)
-margin_corr.to_csv("margin_correlations.csv")
 
 # Positive correlationss
 plt.figure(figsize=(10,6))
@@ -52,4 +50,53 @@ plt.tight_layout()
 plt.savefig("outputs/top_negative_correlations.png")
 plt.show()
 
-# Scatterplot for 
+
+
+# Regression Model
+
+X = df[
+    [
+        "Avg Yds",
+        "Pass Y/A",
+        "Rush Y/A",
+        "TO",
+        "Pnt"
+    ]
+]
+
+y = df["Margin"]
+
+model = LinearRegression()
+
+model.fit(X, y)
+
+coefficients = pd.DataFrame({
+    "Feature": X.columns,
+    "Coefficient": model.coef_
+})
+
+print(coefficients)
+
+predictions = model.predict(X)
+
+r2 = r2_score(y, predictions)
+
+print(f"R²: {r2:.3f}")
+
+plt.figure(figsize=(8,6))
+
+plt.scatter(y, predictions)
+
+plt.plot(
+    [y.min(), y.max()],
+    [y.min(), y.max()],
+    linestyle="--"
+)
+
+plt.xlabel("Actual Margin")
+plt.ylabel("Predicted Margin")
+plt.title("Actual vs Predicted Margin of Victory")
+
+plt.tight_layout()
+plt.savefig("outputs/actual_vs_predicted_margin.png")
+plt.show()
