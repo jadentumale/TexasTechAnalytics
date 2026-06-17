@@ -1,0 +1,8 @@
+Which offensive metrics most strongly influenced Texas Tech football's margin of victory during the 2025 season?
+
+Data: Dataset retrieved from Sports Reference
+
+Data Cleaning: Removed irrelevant and non-offensive metrics from the Dataset
+
+
+

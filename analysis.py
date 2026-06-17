@@ -20,8 +20,10 @@ margin_corr = corr["Margin"].sort_values(ascending=False)
 
 # Remove Margin itself
 margin_corr = margin_corr.drop("Margin")
+margin_corr = margin_corr.drop("Pts")
+margin_corr = margin_corr.drop("PtsO")
 margin_corr.to_csv("margin_correlations.csv")
-#print(margin_corr)
+print(margin_corr)
 
 #Find best and worst correlations
 best_corr = margin_corr.nlargest(5)
@@ -51,13 +53,44 @@ plt.savefig("outputs/top_negative_correlations.png")
 
 
 
-# Regression Model
+
+
+
+# Competing Models
+y = df["Margin"]
+reg1 = df[["Avg Yds",]] 
+reg2 = df[["Avg Yds", "TO"]] 
+reg3 = df[["Avg Yds", "TO", "Pnt"]] 
+m1 = LinearRegression()
+m1.fit(reg1, y)
+m2 = LinearRegression()
+m2.fit(reg2, y)
+m3 = LinearRegression()
+m3.fit(reg3, y)
+m1_coefficients = pd.DataFrame({
+    "Feature": reg1.columns,
+    "Coefficient": m1.coef_
+})
+m2_coefficients = pd.DataFrame({
+    "Feature": reg2.columns,
+    "Coefficient": m2.coef_
+})
+m3_coefficients = pd.DataFrame({
+    "Feature": reg3.columns,
+    "Coefficient": m3.coef_
+})
+print(m1_coefficients)
+print(m2_coefficients)
+print(m3_coefficients)
+off_eff_corr = df[["Avg Yds","Pass Y/A","Rush Y/A"]].corr()
+print(off_eff_corr)
+# Regression Models
 
 X = df[
     ["Avg Yds","Pass Y/A","Rush Y/A","TO","Pnt"]
 ]
 
-y = df["Margin"]
+
 
 model = LinearRegression()
 
@@ -93,30 +126,3 @@ plt.title("Actual vs Predicted Margin of Victory")
 plt.tight_layout()
 plt.savefig("outputs/actual_vs_predicted_margin.png")
 #plt.show()
-
-
-# Competing Models
-reg1 = df[["Avg Yds"]]
-reg2 = df[["Avg Yds", "TO"]]
-reg3 = df[["Avg Yds", "TO", "Pnt"]]
-m1 = LinearRegression()
-model.fit(reg1, y)
-m2 = LinearRegression()
-model.fit(reg2, y)
-m3 = LinearRegression()
-model.fit(reg3, y)
-m1_coefficients = pd.DataFrame({
-    "Feature": reg1.columns,
-    "Coefficient": m1.coef_
-})
-m2_coefficients = pd.DataFrame({
-    "Feature": reg2.columns,
-    "Coefficient": m2.coef_
-})
-m3_coefficients = pd.DataFrame({
-    "Feature": reg3.columns,
-    "Coefficient": m3.coef_
-})
-print(m1_coefficients)
-print(m2_coefficients)
-print(m3_coefficients)
